@@ -26,7 +26,7 @@ FONT = "Bruno Ace"
 SERIAL_PORT   = "/dev/ttyUSB0"   # cambia con la tua porta
 BAUD_RATE     = 115200
 SIMULATE      = True             # True = dati simulati, False = seriale reale
-FULLSCREEN    = True            # True per schermo intero su RPi
+FULLSCREEN    = False            # True per schermo intero su RPi
 UPDATE_MS     = 80               # refresh rate ~12 fps
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -248,7 +248,7 @@ class BigGauge:
 
         # valore numerico
         tid = c.create_text(cx, cy - r*0.25, text=f"{int(value)}",
-                            fill=WHITE, font=(FONT, 18, "bold"))
+                            fill=WHITE, font=(FONT, 10, "bold"))
         self.tags.append(tid)
 
 # ── WIDGET: BARRA VERTICALE ───────────────────────────────────────────────────
@@ -321,7 +321,7 @@ class TurboBar:
     def _draw_static(self):
         x, y, w, h = self.x, self.y, self.w, self.h
         self.c.create_text(x + w//2, y - 16, text="TURBO BOOST",
-                           fill=ORANGE, font=(FONT, 10, "bold"))
+                           fill=ORANGE, font=(FONT, 8, "bold"))
         self.c.create_text(x + w//2, y + h + 14, text="bar",
                            fill=DIM, font=(FONT, 8))
         # cornice obliqua — stessa forma dei segmenti interni
@@ -387,11 +387,11 @@ class SpeedDigital:
         col = RED if spd > 150 else WHITE
         # numero senza padding — anchor center garantisce centratura reale
         t = self.c.create_text(self.cx, self.cy, text=str(spd),
-                               fill=col, font=(FONT, 64, "bold"),
+                               fill=col, font=(FONT, 40, "bold"),
                                anchor="center")
         self.tags.append(t)
         # "km/h" sempre centrato sotto, stessa cx
-        t = self.c.create_text(self.cx, self.cy + 56, text="km/h",
+        t = self.c.create_text(self.cx, self.cy + 40, text="km/h",
                                fill=DIM, font=(FONT, 13, "bold"),
                                anchor="center")
         self.tags.append(t)
@@ -403,8 +403,8 @@ class GearIndicator:
         self.cx = cx
         self.cy = cy
         self.tags = []
-        self.c.create_text(cx, cy + 42, text="GEAR",
-                           fill=DIM, font=(FONT, 9, "bold"))
+        self.c.create_text(cx, cy + 40, text="GEAR",
+                           fill=DIM, font=(FONT, 11, "bold"))
 
     def update(self, gear):
         for t in self.tags:
@@ -414,7 +414,7 @@ class GearIndicator:
         col   = YELLOW if gear == 0 else CYAN
         t = self.c.create_text(self.cx, self.cy,
                                text=label, fill=col,
-                               font=(FONT, 52, "bold"))
+                               font=(FONT, 30, "bold"))
         self.tags.append(t)
 
 # ── WIDGET: THROTTLE BAR OBLIQUA ─────────────────────────────────────────────
@@ -457,10 +457,10 @@ class Dashboard:
         if FULLSCREEN:
             self.root.attributes("-fullscreen", True)
         else:
-            self.root.geometry("1024x600")
+            self.root.geometry("480x320")
         self.root.resizable(False, False)
 
-        W, H = 1024, 600
+        W, H = 480, 320
         self.canvas = tk.Canvas(self.root, width=W, height=H,
                                 bg=BG, highlightthickness=0)
         self.canvas.pack()
@@ -488,53 +488,47 @@ class Dashboard:
             c.create_line(ax, ay, ax+dx*30, ay, fill=RED, width=2)
             c.create_line(ax, ay, ax, ay+dy*30, fill=RED, width=2)
         # titolo
-        c.create_text(W//2, 18, text="MINI COOPER D  ·  CAN BUS TELEMETRY",
-                      fill=DIM, font=(FONT, 10, "bold"))
-        # linea separatore centrale
-        c.create_line(W//2, 60, W//2, H-40, fill=BORDER, width=1, dash=(4,6))
+        c.create_text(W//2, 20, text="MINI COOPER D", fill=DIM, font=(FONT, 8, "bold"))
+        c.create_line(W//2, 30, W//2, H-20, fill=BORDER, width=1, dash=(4,6))
 
     def _build_widgets(self, W, H):
         c = self.canvas
 
         # ── COLONNA SINISTRA: TACHIMETRO + MARCIA ─────────────────────────
         # Tachimetro (RPM) — gauge grande
-        self.rpm_gauge = BigGauge(c, 200, 310, 170,
+        self.rpm_gauge = BigGauge(c, 95, 120, 80,
                                   0, 7000, 5000,
                                   "RPM", "\u00d71000",
                                   arc_start=135, arc_end=45,
                                   color=RED, clockwise=True)
 
         # ── CENTRO: VELOCITÀ + MARCIA ──────────────────────────────────────
-        c.create_text(W//2, 68, text="SPEED", fill=DIM,
-                      font=(FONT, 10, "bold"))
-        self.speed_disp = SpeedDigital(c, W//2, 145)
-        self.gear_disp  = GearIndicator(c, W//2, 260)
+        #c.create_text(W//2, 30, text="SPEED", fill=DIM, font=(FONT, 6, "bold"))
+        self.speed_disp = SpeedDigital(c, W//2, 80)
+        self.gear_disp  = GearIndicator(c, W//2, 200)
 
         # ── TURBO (barra obliqua) ──────────────────────────────────────────
-        self.turbo_bar = TurboBar(c, 380, 350, 260, 34, max_bar=2.5)
+        self.turbo_bar = TurboBar(c, 20, 270, 150, 20, max_bar=2.5)
 
         # ── THROTTLE ──────────────────────────────────────────────────────
-        self.throttle = ThrottleBar(c, 380, 430, 260, 22)
+        self.throttle = ThrottleBar(c, 320, 270, 120, 20)
 
         # ── COLONNA DESTRA: BARRE VERTICALI ───────────────────────────────
-        bar_y  = 100
-        bar_h  = 220
-        bar_w  = 38
-        gap    = 56
+        bar_y  = 50
+        bar_h  = 140
+        bar_w  = 18
+        gap    = 42
 
-        x_start = 710
+        x_start = 305
+
         self.bar_coolant = VBar(c, x_start,       bar_y, bar_w, bar_h,
-                                60, 110, "COOL", "°C", warn_pct=0.82,
-                                color=CYAN)
+                                60, 110, "COOL", "°C", warn_pct=0.82, color=CYAN)
         self.bar_oil     = VBar(c, x_start+gap,   bar_y, bar_w, bar_h,
-                                60, 130, "OIL",  "°C", warn_pct=0.85,
-                                color=ORANGE)
+                                60, 130, "OIL",  "°C", warn_pct=0.85, color=ORANGE)
         self.bar_fuel    = VBar(c, x_start+gap*2, bar_y, bar_w, bar_h,
-                                0,  100, "FUEL", "%",  warn_pct=0.99,
-                                color=GREEN)
+                                0,  100, "FUEL", "%",  warn_pct=0.99, color=GREEN)
         self.bar_batt    = VBar(c, x_start+gap*3, bar_y, bar_w, bar_h,
-                                10, 16,  "BATT", "V",  warn_pct=0.99,
-                                color=YELLOW)
+                                10, 16,  "BATT", "V",  warn_pct=0.99, color=YELLOW)
 
         # ── TIMESTAMP / SIM LABEL ─────────────────────────────────────────
         self._sim_lbl = c.create_text(W - 12, H - 12,

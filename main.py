@@ -26,7 +26,7 @@ FONT = "Bruno Ace"
 SERIAL_PORT   = "/dev/ttyUSB0"   # cambia con la tua porta
 BAUD_RATE     = 115200
 SIMULATE      = True             # True = dati simulati, False = seriale reale
-FULLSCREEN    = False            # True per schermo intero su RPi
+FULLSCREEN    = True            # True per schermo intero su RPi
 UPDATE_MS     = 80               # refresh rate ~12 fps
 # ─────────────────────────────────────────────────────────────────────────────
 
